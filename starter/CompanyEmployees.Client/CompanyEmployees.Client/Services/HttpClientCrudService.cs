@@ -36,8 +36,9 @@ namespace CompanyEmployees.Client.Services
         }
 		public async Task Execute()
 		{
-            //await GetCompanies();
-            await GetCompaniesWithXmlHeader();
+            await GetCompanies();
+            //await GetCompaniesWithXmlHeader();
+            //await CreateCompanyWithHttpRequestMessage();
         }
 
 		public async Task GetCompaniesWithXmlHeader()
@@ -55,6 +56,29 @@ namespace CompanyEmployees.Client.Services
             }
             var serializer = new XmlSerializer(typeof(List<CompanyDto>));
             var companies = (List<CompanyDto>)serializer.Deserialize(new StringReader(doc.ToString()));
+        }
+
+        private async Task CreateCompanyWithHttpRequestMessage()
+        {
+            var companyForCreation = new CompanyForCreationDto
+            {
+                Name = "MX3",
+                Address = "Drummond Street, Carlton 3053",
+                Country = "Australia"
+            };
+
+            var company = JsonSerializer.Serialize(companyForCreation);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "companies");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Content = new StringContent(company, Encoding.UTF8);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var createdCompany = JsonSerializer.Deserialize<CompanyDto>(content, _options);
         }
 	}
 }
