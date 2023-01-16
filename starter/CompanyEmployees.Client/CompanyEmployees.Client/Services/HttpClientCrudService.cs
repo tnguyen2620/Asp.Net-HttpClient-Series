@@ -39,10 +39,11 @@ namespace CompanyEmployees.Client.Services
             //await GetCompanies();
             //await GetCompaniesWithXmlHeader();
             //await CreateCompanyWithHttpRequestMessage();
-            await UpdateCompanyWithHttpRequestMessage();
+            //await UpdateCompanyWithHttpRequestMessage();
+            await DeleteCompanyWithHttpResponseMessage();
         }
 
-		public async Task GetCompaniesWithXmlHeader()
+		private async Task GetCompaniesWithXmlHeader()
 		{
             var request = new HttpRequestMessage(HttpMethod.Get, "companies");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
@@ -87,12 +88,12 @@ namespace CompanyEmployees.Client.Services
             var companyForUpdate = new CompanyForUpdateDto
             {
                 Name = "MX3",
-                Address = "43/255 Drummond Street, Carlton 3053",
+                Address = "43/255 Drummond Street, Carlton 3053", //this address will get updated
                 Country = "Australia"
             };
 
             var company = JsonSerializer.Serialize(companyForUpdate);
-            var uri = Path.Combine("companies", "DD261A1A-1DA5-4023-9F8B-08DAF768D2FD");
+            var uri = Path.Combine("companies", "DD261A1A-1DA5-4023-9F8B-08DAF768D2FD"); //this is the ID of the company that will get updated. 
             var request = new HttpRequestMessage(HttpMethod.Put, uri);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Content = new StringContent(company, Encoding.UTF8);
@@ -103,6 +104,15 @@ namespace CompanyEmployees.Client.Services
 
             var content = await response.Content.ReadAsStringAsync();
             var createdCompany = JsonSerializer.Deserialize<CompanyDto>(content, _options);
+        }
+
+        private async Task DeleteCompanyWithHttpResponseMessage()
+        {
+            var uri = Path.Combine("companies", "DD261A1A-1DA5-4023-9F8B-08DAF768D2FD"); //id of the resource that will get deleted
+            var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
         }
     }
 }
